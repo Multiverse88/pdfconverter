@@ -71,21 +71,35 @@ export default async function handler(req, res) {
     // Hubungi PDFEndpoint API
     const response = await axios.request(options);
 
+    // Pastikan response.data adalah Buffer
+    let pdfBuffer = response.data;
+    if (!Buffer.isBuffer(pdfBuffer)) {
+      pdfBuffer = Buffer.from(pdfBuffer);
+    }
+
     // Set response headers untuk PDF
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=converted.pdf");
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Content-Length", pdfBuffer.length);
+    res.setHeader("Accept-Ranges", "bytes");
 
     // Kirim PDF ke client
-    return res.status(200).send(response.data);
+    return res.status(200).send(pdfBuffer);
   } catch (error) {
     console.error("Error converting HTML to PDF:", error.message);
+    console.error("Error details:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
+    });
 
     // Handle error dari PDFEndpoint API
     if (error.response) {
       return res.status(error.response.status).json({
         error: "Error from PDF conversion service",
-        details: error.response.data?.message || error.message
+        details: error.response.data?.message || error.message,
+        status: error.response.status
       });
     }
 
