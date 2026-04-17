@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PDF_ENDPOINT_API_KEY=${PDF_ENDPOINT_API_KEY}
+      - PDF_ENDPOINT_URL=${PDF_ENDPOINT_URL:-https://api.pdfendpoint.com/v1/convert}
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+    restart: unless-stopped

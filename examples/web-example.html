@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Converter - Web Example</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    .subtitle {
+      color: #666;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .input-group input[type="radio"] {
+      margin-top: 8px;
+    }
+    
+    .input-group label {
+      margin: 0;
+      font-weight: normal;
+    }
+    
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-family: inherit;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    
+    button {
+      flex: 1;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-convert {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-convert:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-convert:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .btn-reset {
+      background: #f0f0f0;
+      color: #333;
+    }
+    
+    .btn-reset:hover {
+      background: #e0e0e0;
+    }
+    
+    .loader {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    .spinner {
+      border: 4px solid #f0f0f0;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .message {
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+      display: none;
+    }
+    
+    .message.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .message.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 PDF Converter</h1>
+    <p class="subtitle">Konversi URL atau HTML ke PDF secara instan</p>
+    
+    <form id="converterForm">
+      <!-- Source Selection -->
+      <div class="form-group">
+        <label>Source</label>
+        <div class="input-group">
+          <input type="radio" id="sourceUrl" name="source" value="url" checked>
+          <label for="sourceUrl">URL</label>
+        </div>
+        <div class="input-group">
+          <input type="radio" id="sourceHtml" name="source" value="html">
+          <label for="sourceHtml">HTML</label>
+        </div>
+      </div>
+      
+      <!-- URL Input -->
+      <div class="form-group" id="urlGroup">
+        <label for="urlInput">Website URL*</label>
+        <input 
+          type="text" 
+          id="urlInput" 
+          placeholder="https://example.com"
+          value="https://en.wikipedia.org/wiki/PDF"
+        >
+      </div>
+      
+      <!-- HTML Input -->
+      <div class="form-group hidden" id="htmlGroup">
+        <label for="htmlInput">HTML Content*</label>
+        <textarea 
+          id="htmlInput" 
+          placeholder="&lt;html&gt;&lt;body&gt;...&lt;/body&gt;&lt;/html&gt;"
+        ></textarea>
+      </div>
+      
+      <!-- Options -->
+      <div class="form-group">
+        <label>Pengaturan</label>
+        <div class="grid">
+          <div>
+            <label for="orientation">Orientasi</label>
+            <select id="orientation">
+              <option value="vertical">Vertical (Portrait)</option>
+              <option value="horizontal">Horizontal (Landscape)</option>
+            </select>
+          </div>
+          <div>
+            <label for="pageSize">Ukuran Halaman</label>
+            <select id="pageSize">
+              <option value="A4" selected>A4</option>
+              <option value="Letter">Letter</option>
+              <option value="A3">A3</option>
+              <option value="A5">A5</option>
+            </select>
+          </div>
+          <div>
+            <label for="marginTop">Margin Atas</label>
+            <input type="text" id="marginTop" value="2cm">
+          </div>
+          <div>
+            <label for="marginBottom">Margin Bawah</label>
+            <input type="text" id="marginBottom" value="2cm">
+          </div>
+          <div>
+            <label for="marginLeft">Margin Kiri</label>
+            <input type="text" id="marginLeft" value="2cm">
+          </div>
+          <div>
+            <label for="marginRight">Margin Kanan</label>
+            <input type="text" id="marginRight" value="2cm">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Buttons -->
+      <div class="button-group">
+        <button type="submit" class="btn-convert">Convert to PDF</button>
+        <button type="reset" class="btn-reset">Reset</button>
+      </div>
+      
+      <!-- Loader -->
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Mengkonversi... Mohon tunggu...</p>
+      </div>
+      
+      <!-- Messages -->
+      <div class="message" id="successMessage"></div>
+      <div class="message" id="errorMessage"></div>
+    </form>
+  </div>
+  
+  <script>
+    const API_URL = 'https://your-project.vercel.app/api/convert'; // Ubah dengan URL Vercel Anda
+    
+    const form = document.getElementById('converterForm');
+    const sourceRadios = document.querySelectorAll('input[name="source"]');
+    const urlGroup = document.getElementById('urlGroup');
+    const htmlGroup = document.getElementById('htmlGroup');
+    const loader = document.getElementById('loader');
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    // Toggle input fields berdasarkan source selection
+    sourceRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.value === 'url') {
+          urlGroup.classList.remove('hidden');
+          htmlGroup.classList.add('hidden');
+        } else {
+          urlGroup.classList.add('hidden');
+          htmlGroup.classList.remove('hidden');
+        }
+      });
+    });
+    
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const source = document.querySelector('input[name="source"]:checked').value;
+      const url = document.getElementById('urlInput').value;
+      const html = document.getElementById('htmlInput').value;
+      const orientation = document.getElementById('orientation').value;
+      const pageSize = document.getElementById('pageSize').value;
+      const marginTop = document.getElementById('marginTop').value;
+      const marginBottom = document.getElementById('marginBottom').value;
+      const marginLeft = document.getElementById('marginLeft').value;
+      const marginRight = document.getElementById('marginRight').value;
+      
+      // Validasi
+      if (source === 'url' && !url.trim()) {
+        showError('Masukkan URL');
+        return;
+      }
+      if (source === 'html' && !html.trim()) {
+        showError('Masukkan konten HTML');
+        return;
+      }
+      
+      try {
+        showLoader();
+        clearMessages();
+        
+        const payload = {
+          sandbox: true,
+          orientation,
+          page_size: pageSize,
+          margin_top: marginTop,
+          margin_bottom: marginBottom,
+          margin_left: marginLeft,
+          margin_right: marginRight
+        };
+        
+        if (source === 'url') {
+          payload.url = url;
+        } else {
+          payload.html = html;
+        }
+        
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || `Error: ${response.status}`);
+        }
+        
+        const blob = await response.blob();
+        const pdfUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = `document-${Date.now()}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(pdfUrl);
+        
+        showSuccess('✅ PDF berhasil diunduh!');
+      } catch (error) {
+        showError('❌ Error: ' + error.message);
+      } finally {
+        hideLoader();
+      }
+    });
+    
+    function showLoader() {
+      loader.style.display = 'block';
+    }
+    
+    function hideLoader() {
+      loader.style.display = 'none';
+    }
+    
+    function clearMessages() {
+      successMessage.style.display = 'none';
+      errorMessage.style.display = 'none';
+    }
+    
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.classList.add('success');
+      successMessage.classList.remove('error');
+      successMessage.style.display = 'block';
+    }
+    
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.add('error');
+      errorMessage.classList.remove('success');
+      errorMessage.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
