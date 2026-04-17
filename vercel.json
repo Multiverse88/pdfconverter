@@ -15,9 +15,5 @@
       "src": "/api/health",
       "dest": "api/health.js"
     }
-  ],
-  "env": {
-    "PDF_ENDPOINT_API_KEY": "@pdf_endpoint_api_key",
-    "PDF_ENDPOINT_URL": "@pdf_endpoint_url"
-  }
+  ]
 }
